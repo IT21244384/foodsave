@@ -1,0 +1,40 @@
+{
+  "name": "foodsave-server",
+  "version": "1.0.0",
+  "description": "FoodSave API – IT2150 ITP (Janahan R, Abisheak S)",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon --watch src src/server.js",
+    "start": "node src/server.js",
+    "seed": "node src/seed/seed.js",
+    "test": "jest --runInBand"
+  },
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.7",
+    "express": "^4.22.3",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb-memory-server": "^11.3.0",
+    "mongoose": "^8.24.5",
+    "morgan": "^1.12.1",
+    "multer": "^2.4.0",
+    "zod": "^4.6.6"
+  },
+  "devDependencies": {
+    "jest": "^30.5.2",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.3.1"
+  },
+  "private": true,
+  "jest": {
+    "testEnvironment": "node",
+    "setupFiles": [
+      "<rootDir>/tests/env.js"
+    ],
+    "testTimeout": 60000
+  }
+}

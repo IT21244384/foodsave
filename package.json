@@ -1,0 +1,14 @@
+{
+  "name": "foodsave",
+  "private": true,
+  "description": "FoodSave – surplus food rescue and redistribution (IT2150 IT Project, Janahan R & Abisheak S)",
+  "scripts": {
+    "setup": "npm install --prefix server && npm install --prefix client",
+    "build": "npm run build --prefix client",
+    "start": "npm start --prefix server",
+    "demo": "npm run build && npm start",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "test": "npm test --prefix server"
+  }
+}
