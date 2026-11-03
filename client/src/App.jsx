@@ -13,6 +13,11 @@ import FindSurplus from './pages/FindSurplus.jsx';
 import ListingDetail from './pages/ListingDetail.jsx';
 import MyReservations from './pages/MyReservations.jsx';
 import CharityOverview from './pages/charity/Overview.jsx';
+import Claims from './pages/charity/Claims.jsx';
+import Handover from './pages/restaurant/Handover.jsx';
+import Reports from './pages/restaurant/Reports.jsx';
+import Impact from './pages/admin/Impact.jsx';
+import Notifications from './pages/Notifications.jsx';
 import Verification from './pages/admin/Verification.jsx';
 
 function RequireRole({ roles, children }) {
@@ -37,6 +42,8 @@ export default function App() {
         <Route path="/restaurant/listings" element={<RequireRole roles={['restaurant']}><MyListings /></RequireRole>} />
         <Route path="/restaurant/listings/:id/edit" element={<RequireRole roles={['restaurant']}><ListingEditor /></RequireRole>} />
         <Route path="/restaurant/profile" element={<RequireRole roles={['restaurant']}><RestaurantProfile /></RequireRole>} />
+        <Route path="/restaurant/handover" element={<RequireRole roles={['restaurant']}><Handover /></RequireRole>} />
+        <Route path="/restaurant/reports" element={<RequireRole roles={['restaurant']}><Reports /></RequireRole>} />
 
         {/* F2 – Reservation, Charity Claims & Impact Reporting (Abisheak S) */}
         <Route path="/find" element={<FindSurplus />} />
@@ -44,7 +51,11 @@ export default function App() {
         <Route path="/reservations" element={<RequireRole roles={['customer']}><MyReservations /></RequireRole>} />
         <Route path="/charity" element={<RequireRole roles={['charity']}><CharityOverview /></RequireRole>} />
         <Route path="/charity/donations" element={<RequireRole roles={['charity']}><FindSurplus forCharity /></RequireRole>} />
+        <Route path="/charity/claims" element={<RequireRole roles={['charity']}><Claims /></RequireRole>} />
         <Route path="/admin" element={<RequireRole roles={['admin']}><Verification /></RequireRole>} />
+        <Route path="/admin/impact" element={<RequireRole roles={['admin']}><Impact /></RequireRole>} />
+
+        <Route path="/notifications" element={<RequireRole roles={['customer', 'restaurant', 'charity', 'admin']}><Notifications /></RequireRole>} />
 
         <Route path="*" element={<div className="card"><h2>Page not found</h2><p>That page does not exist.</p></div>} />
       </Routes>

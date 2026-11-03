@@ -13,6 +13,7 @@ const config = {
   maxUploadBytes: 5 * 1024 * 1024,
   maxHoldHoursCooked: 6,
   loginRateLimit: Number(process.env.LOGIN_RATE_LIMIT) || 10,
+  codeRateLimit: Number(process.env.CODE_RATE_LIMIT) || 20, // wrong pickup codes per 15 minutes
 };
 
 if (config.env === 'production' && config.jwtSecret === 'dev-only-secret-change-me') {

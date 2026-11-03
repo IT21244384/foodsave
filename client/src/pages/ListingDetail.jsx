@@ -7,10 +7,10 @@ import { rs, fmtTime, timeLeft } from '../lib.js';
 
 const LIMIT = 2; // packs per person (FR2.3)
 
-// F2 – listing detail with FR2.3 reservation and FR2.5 stock lock (Abisheak S).
+// F2 – listing detail with FR2.3 reservation, FR2.4 claim and FR2.5 stock lock (Abisheak S).
 export default function ListingDetail() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [l, setL] = useState(null);
   const [qty, setQty] = useState(1);
@@ -18,13 +18,19 @@ export default function ListingDetail() {
   const [reserveError, setReserveError] = useState('');
   const [busy, setBusy] = useState(false);
 
+  const [fairShare, setFairShare] = useState(null);
+
   const load = useCallback(() => api(`/listings/${id}`).then(setL).catch((e) => setError(e.message)), [id]);
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (user?.role === 'charity') api('/claims/mine').then((d) => setFairShare(d.today)).catch(() => {});
+  }, [user]);
 
   if (error) return <><Link to="/find">← Back to results</Link><Banner kind="warn">{error}</Banner></>;
   if (!l) return <Spinner />;
   const live = l.status === 'active' && l.available > 0 && new Date(l.safeUntil) > new Date() && new Date(l.pickupTo) > new Date();
   const maxQty = Math.max(1, Math.min(LIMIT, l.available));
+  const maxClaim = Math.min(l.available, fairShare ? fairShare.left : l.available);
   const rows = [
     ['Pickup window', `${fmtTime(l.pickupFrom)} – ${fmtTime(l.pickupTo)}`],
     ['Safe to eat until', `${fmtTime(l.safeUntil)} (${timeLeft(l.safeUntil)})`],
@@ -47,11 +53,48 @@ export default function ListingDetail() {
     }
   }
 
+  async function claim() {
+    setBusy(true);
+    setReserveError('');
+    try {
+      const c = await api(`/listings/${l.id}/claims`, { method: 'POST', body: { quantity: qty } });
+      navigate('/charity/claims', { state: { justClaimed: c } });
+    } catch (e) {
+      setReserveError(e.message);
+      if (e.status === 409) { await load(); setQty(1); }
+    } finally {
+      setBusy(false);
+    }
+  }
+
   let action;
-  if (l.offerType === 'donate') {
-    action = <Banner kind="info" title="Charities only.">Verified charities will claim donations here in sprint 2 (FR2.4).</Banner>;
-  } else if (!live) {
+  if (!live) {
     action = <Banner kind="warn">This listing is no longer available.</Banner>;
+  } else if (l.offerType === 'donate') {
+    if (user?.role !== 'charity') {
+      action = <Banner kind="info" title="Charities only.">Only verified charities can claim donations.</Banner>;
+    } else if (profile?.status !== 'approved') {
+      action = <Banner kind="info" title="Waiting for verification.">You can claim donations once an administrator approves your charity.</Banner>;
+    } else if (fairShare && fairShare.left === 0) {
+      action = <Banner kind="warn" title="Daily limit reached.">You have claimed your fair share of {fairShare.limit} packs today. Please try again tomorrow.</Banner>;
+    } else {
+      action = (
+        <>
+          {reserveError && <Banner kind="warn">{reserveError}</Banner>}
+          <div className="row" style={{ alignItems: 'center', marginBottom: 12 }}>
+            <span>Packs</span>
+            <div className="stepper" role="group" aria-label="Number of packs">
+              <button type="button" aria-label="One fewer" disabled={qty <= 1} onClick={() => setQty(qty - 1)}>−</button>
+              <output aria-live="polite">{qty}</output>
+              <button type="button" aria-label="One more" disabled={qty >= maxClaim} onClick={() => setQty(qty + 1)}>+</button>
+            </div>
+            {fairShare && <span className="hint">{fairShare.left} left in today’s fair share</span>}
+          </div>
+          <button type="button" className="btn primary block" disabled={busy} onClick={claim}>{busy ? 'Claiming…' : 'Claim and get pickup code'}</button>
+          <p className="hint">Free. Cancel until {fmtTime(l.pickupFrom)} if plans change. Your packs are locked the moment you claim.</p>
+        </>
+      );
+    }
   } else if (!user) {
     action = <><p>Sign in as a customer to reserve up to {LIMIT} packs.</p><Link className="btn primary block" to="/login">Sign in to reserve</Link></>;
   } else if (user.role !== 'customer') {

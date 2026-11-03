@@ -49,6 +49,14 @@ export function checkListing(v, now = new Date()) {
   return e;
 }
 
+// The last 12 months, newest first, for the report filters.
+export function lastMonths(now = new Date()) {
+  return Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    return { value: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, label: d.toLocaleDateString('en-LK', { month: 'long', year: 'numeric' }) };
+  });
+}
+
 // Preset locations so the demo works without GPS. Coordinates are approximate area centres.
 export const PLACES = [
   { name: 'SLIIT, Malabe', lat: 6.9147, lng: 79.9729 },

@@ -10,6 +10,7 @@ const Charity = require('../models/Charity');
 const SurplusListing = require('../models/SurplusListing');
 const Reservation = require('../models/Reservation');
 const DonationClaim = require('../models/DonationClaim');
+const Notification = require('../models/Notification');
 
 const DEMO_PASSWORD = 'Demo@1234';
 const point = (lat, lng) => ({ type: 'Point', coordinates: [lng, lat] });
@@ -55,8 +56,8 @@ const LISTINGS = [
 ];
 
 async function seed() {
-  await Promise.all([User, Restaurant, Charity, SurplusListing, Reservation, DonationClaim].map((M) => M.deleteMany({})));
-  await Promise.all([Restaurant, Charity, SurplusListing].map((M) => M.syncIndexes()));
+  await Promise.all([User, Restaurant, Charity, SurplusListing, Reservation, DonationClaim, Notification].map((M) => M.deleteMany({})));
+  await Promise.all([Restaurant, Charity, SurplusListing, Reservation, DonationClaim].map((M) => M.syncIndexes()));
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
   const admin = await User.create({ name: 'FoodSave Admin', email: 'admin@foodsave.lk', role: 'admin', passwordHash });
   await User.create({ name: 'Nimal Perera', email: 'nimal@example.com', role: 'customer', phone: '0771234567', passwordHash });
@@ -103,6 +104,40 @@ async function seed() {
     await Reservation.create({ listing: listing._id, customer: customers[email]._id, quantity, pickupCode });
     await SurplusListing.updateOne({ _id: listing._id }, { $inc: { available: -quantity } });
   }
+
+  // One open donation claim (FR2.4), ready to hand over with code DN-5120.
+  const charities = await Charity.find({ status: 'approved' }).sort({ name: 1 });
+  const sahana = charities.find((c) => c.regNo === 'NGO/WP/1187');
+  await DonationClaim.create({ listing: listings['Chicken kottu']._id, charity: sahana._id, quantity: 2, pickupCode: 'DN-5120' });
+  await SurplusListing.updateOne({ _id: listings['Chicken kottu']._id }, { $inc: { available: -2 } });
+
+  await seedHistory(Object.values(restaurants).filter((r) => r.status === 'approved'), Object.values(customers), charities);
+}
+
+// Ten weeks of finished pickups so the reports (FR1.6, FR2.6) have sample data to show.
+async function seedHistory(restaurants, customers, charities) {
+  const SALES = [['Rice and curry', 'Cooked', ['Veg'], 500, 180], ['Fish buns', 'Bakery', ['Non-veg'], 480, 200], ['Chicken fried rice', 'Cooked', ['Non-veg'], 750, 280], ['Sealed sandwiches', 'Packaged', ['Veg'], 400, 150]];
+  const DONATIONS = [['Vegetable curry and rice', 'Cooked', ['Veg'], 600], ['Assorted bread', 'Bakery', ['Veg'], 300]];
+  const reservations = [];
+  const claims = [];
+  for (let i = 0; i < 70; i += 1) {
+    const daysAgo = 1 + i;
+    const r = restaurants[i % restaurants.length];
+    const when = (min) => new Date(Date.now() - daysAgo * 86400000 + min * 60000);
+    const base = { createdAt: when(-120), restaurant: r._id, location: r.location, pickupFrom: when(-60), pickupTo: when(30), safeUntil: when(120), hygieneDeclared: true };
+    if (i % 3 === 0) {
+      const [item, category, dietTags, originalPrice] = DONATIONS[i % DONATIONS.length];
+      const listing = await SurplusListing.create({ ...base, item, category, dietTags, quantity: 6 + (i % 5), available: 0, originalPrice, price: 0, offerType: 'donate', status: 'collected' });
+      claims.push({ listing: listing._id, charity: charities[i % charities.length]._id, quantity: listing.quantity, pickupCode: `DN-${1000 + i}`, status: 'collected', collectedAt: when(0), createdAt: when(-90) });
+    } else {
+      const [item, category, dietTags, originalPrice, price] = SALES[i % SALES.length];
+      const unsold = i % 7 === 0 ? 2 : 0; // some packs go uncollected, as they would in real use
+      const listing = await SurplusListing.create({ ...base, item, category, dietTags, quantity: 4 + unsold, available: unsold, originalPrice, price, offerType: 'sale', status: unsold ? 'expired' : 'collected' });
+      [0, 1].forEach((c) => reservations.push({ listing: listing._id, customer: customers[(i + c) % customers.length]._id, quantity: 2, pickupCode: `FS-${1000 + i * 2 + c}`, status: 'collected', collectedAt: when(0), createdAt: when(-90) }));
+    }
+  }
+  await Reservation.insertMany(reservations);
+  await DonationClaim.insertMany(claims);
 }
 
 module.exports = { seed, DEMO_PASSWORD };

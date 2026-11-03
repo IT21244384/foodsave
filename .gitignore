@@ -3,3 +3,4 @@ node_modules/
 server/uploads/
 client/dist/
 coverage/
+docs/evidence/fail-*.png

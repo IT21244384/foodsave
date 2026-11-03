@@ -62,7 +62,7 @@ export default function MyReservations() {
                 <td>{r.listing?.restaurant?.name}</td>
                 <td>{r.listing ? `${fmtDateTime(r.listing.pickupFrom)} – ${fmtTime(r.listing.pickupTo)}` : ''}</td>
                 <td>{r.listing ? rs(r.listing.price * r.quantity) : ''}</td>
-                <td><span className={`chip ${STATUS[r.status]}`}>{r.status[0].toUpperCase() + r.status.slice(1)}</span></td>
+                <td><span className={`chip ${STATUS[r.status]}`}>{r.status[0].toUpperCase() + r.status.slice(1)}</span>{r.closedReason && <div className="sub">{r.closedReason}</div>}</td>
                 <td className="actions">{r.status === 'reserved' && r.listing && new Date(r.listing.pickupFrom) > new Date() && <button type="button" className="btn ghost small" onClick={() => cancel(r)}>Cancel</button>}</td>
               </tr>))}
             </tbody>

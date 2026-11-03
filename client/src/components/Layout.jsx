@@ -1,31 +1,42 @@
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
+import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 
-// [label, path] – a null path marks a screen planned for a later sprint (shown, but disabled).
 const TABS = {
-  restaurant: [['Dashboard', '/restaurant'], ['Post surplus', '/restaurant/new'], ['My listings', '/restaurant/listings'], ['Profile', '/restaurant/profile'], ['Hand-over', null, 'Sprint 2 (FR1.5)'], ['Reports', null, 'Sprint 3 (FR1.6 report)']],
+  restaurant: [['Dashboard', '/restaurant'], ['Post surplus', '/restaurant/new'], ['My listings', '/restaurant/listings'], ['Hand-over', '/restaurant/handover'], ['Reports', '/restaurant/reports'], ['Profile', '/restaurant/profile']],
   customer: [['Find surplus', '/find'], ['My reservations', '/reservations']],
-  charity: [['Overview', '/charity'], ['Donations near us', '/charity/donations'], ['Claim history', null, 'Sprint 2 (FR2.4)']],
-  admin: [['Verification', '/admin'], ['Impact dashboard', null, 'Sprint 3 (FR2.6)']],
+  charity: [['Overview', '/charity'], ['Donations near us', '/charity/donations'], ['Claim history', '/charity/claims']],
+  admin: [['Verification', '/admin'], ['Impact dashboard', '/admin/impact']],
 };
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [unread, setUnread] = useState(0);
   const tabs = (user && TABS[user.role]) || [];
+
+  useEffect(() => {
+    if (!user) { setUnread(0); return undefined; }
+    const check = () => api('/notifications').then((d) => setUnread(d.unread)).catch(() => {});
+    check();
+    window.addEventListener('foodsave:notifications', check);
+    return () => window.removeEventListener('foodsave:notifications', check);
+  }, [user, pathname]);
+
   return (
     <>
       <a className="skip" href="#main">Skip to content</a>
       <header className="app">
         <Link to="/" className="logo" aria-label="FoodSave home"><span className="dot" aria-hidden="true" />FoodSave</Link>
         <nav className="tabs" aria-label="Main">
-          {tabs.map(([label, to, later]) => (to
-            ? <NavLink key={label} to={to} end>{label}</NavLink>
-            : <span key={label} className="soon" title={`Planned for ${later}`}>{label}<small>soon</small></span>))}
+          {tabs.map(([label, to]) => <NavLink key={label} to={to} end>{label}</NavLink>)}
         </nav>
         <div className="who">
           {user ? (
             <>
+              <Link to="/notifications" className="note-link">Notifications{unread > 0 && <span className="note-count">{unread}<span className="sr-only"> unread</span></span>}</Link>
               <span className="who-name">{user.name}</span>
               <span className="avatar" aria-hidden="true">{user.name[0]}</span>
               <button type="button" className="btn ghost small on-dark" onClick={() => { logout(); navigate('/'); }}>Sign out</button>

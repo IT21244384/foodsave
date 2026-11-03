@@ -13,7 +13,7 @@ export default function CharityOverview() {
   return (
     <>
       <PageHead title={profile.name} sub={<>Verification status: <Chip status={profile.status} /></>} owner="F2 · FR2.1 · Abisheak S" />
-      {profile.status === 'approved' && <Banner kind="ok" title="Verified charity.">You can browse donations near you. Claiming opens in sprint 2.</Banner>}
+      {profile.status === 'approved' && <Banner kind="ok" title="Verified charity.">You can claim donations near you, up to your daily fair share.</Banner>}
       {profile.status === 'pending' && <Banner kind="info" title="Waiting for verification.">An administrator is checking your registration certificate. This usually takes about a day.</Banner>}
       {profile.status === 'rejected' && <Banner kind="warn" title="Registration not approved.">Reason: {profile.rejectionReason}. Contact FoodSave support to resubmit your certificate.</Banner>}
       <div className="grid split">

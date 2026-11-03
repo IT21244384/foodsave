@@ -8,7 +8,7 @@ const config = require('./config');
 const { notFound, errorHandler } = require('./middleware/errors');
 
 // Builds the Express app. Options let tests use a low login rate limit.
-function createApp({ loginLimit = config.loginRateLimit } = {}) {
+function createApp({ loginLimit = config.loginRateLimit, codeLimit = config.codeRateLimit } = {}) {
   const app = express();
   app.disable('x-powered-by');
   // Default Helmet headers, plus what OpenStreetMap tiles need for the "near me" map:
@@ -27,7 +27,10 @@ function createApp({ loginLimit = config.loginRateLimit } = {}) {
   app.use('/api/auth', require('./routes/auth')({ loginLimit }));
   app.use('/api/restaurants', require('./routes/restaurants'));
   app.use('/api', require('./routes/reservations')); // before /api/listings/:id
+  app.use('/api', require('./routes/claims')); // before /api/listings/:id
   app.use('/api/listings', require('./routes/listings'));
+  app.use('/api/handover', require('./routes/handover')({ codeLimit }));
+  app.use('/api/notifications', require('./routes/notifications'));
   app.use('/api/charities', require('./routes/charities'));
   app.use('/api/admin', require('./routes/admin'));
   app.use('/api', notFound);

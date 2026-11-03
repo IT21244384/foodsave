@@ -1,0 +1,176 @@
+{
+  "when": "2026-11-03T17:55:27.821Z",
+  "browser": "msedge.exe",
+  "passed": 16,
+  "failed": 0,
+  "results": [
+    {
+      "id": "TC-E2E-01",
+      "name": "A wrong password shows a clear message",
+      "status": "pass",
+      "ms": 929
+    },
+    {
+      "id": "TC-E2E-02",
+      "name": "A customer finds surplus on the map and in the list",
+      "status": "pass",
+      "ms": 4515
+    },
+    {
+      "id": "TC-E2E-03",
+      "name": "A customer reserves packs and receives a pickup code",
+      "status": "pass",
+      "ms": 578
+    },
+    {
+      "id": "TC-E2E-04",
+      "name": "A wrong pickup code is rejected at hand-over",
+      "status": "pass",
+      "ms": 2097
+    },
+    {
+      "id": "TC-E2E-05",
+      "name": "The right code confirms collection and appears in the customer history",
+      "status": "pass",
+      "ms": 3000
+    },
+    {
+      "id": "TC-E2E-06",
+      "name": "Invalid listing input shows field messages and saves nothing",
+      "status": "pass",
+      "ms": 2229
+    },
+    {
+      "id": "TC-E2E-07",
+      "name": "A valid listing is published and customers can find it",
+      "status": "pass",
+      "ms": 521
+    },
+    {
+      "id": "TC-E2E-08",
+      "name": "The monthly report shows figures and charts",
+      "status": "pass",
+      "ms": 1222
+    },
+    {
+      "id": "TC-E2E-09",
+      "name": "A pending charity can browse but is not offered a claim",
+      "status": "pass",
+      "ms": 2830
+    },
+    {
+      "id": "TC-E2E-10",
+      "name": "An approved charity claims a donation and receives a code",
+      "status": "pass",
+      "ms": 4396
+    },
+    {
+      "id": "TC-E2E-11",
+      "name": "The restaurant hands the claim over with its DN code",
+      "status": "pass",
+      "ms": 2858
+    },
+    {
+      "id": "TC-E2E-12",
+      "name": "The administrator approves a charity and the charity is told",
+      "status": "pass",
+      "ms": 3892
+    },
+    {
+      "id": "TC-E2E-13",
+      "name": "The impact dashboard shows totals and the PDF downloads",
+      "status": "pass",
+      "ms": 2516
+    },
+    {
+      "id": "TC-E2E-14",
+      "name": "A customer is sent away from administrator pages",
+      "status": "pass",
+      "ms": 2071
+    },
+    {
+      "id": "TC-E2E-15",
+      "name": "Customer and charity screens fit a 360 px phone with no sideways scrolling",
+      "status": "pass",
+      "ms": 66681
+    },
+    {
+      "id": "TC-E2E-16",
+      "name": "No unexpected errors were logged in the browser console",
+      "status": "pass",
+      "ms": 0
+    }
+  ],
+  "accessibility": [
+    {
+      "page": "Home and sign in",
+      "violations": [],
+      "passes": 22
+    },
+    {
+      "page": "Find surplus",
+      "violations": [],
+      "passes": 26
+    },
+    {
+      "page": "Listing detail",
+      "violations": [],
+      "passes": 23
+    },
+    {
+      "page": "My reservations",
+      "violations": [],
+      "passes": 22
+    },
+    {
+      "page": "Hand-over",
+      "violations": [],
+      "passes": 27
+    },
+    {
+      "page": "Restaurant dashboard",
+      "violations": [],
+      "passes": 20
+    },
+    {
+      "page": "Post surplus",
+      "violations": [],
+      "passes": 27
+    },
+    {
+      "page": "My listings",
+      "violations": [],
+      "passes": 27
+    },
+    {
+      "page": "Monthly report",
+      "violations": [],
+      "passes": 23
+    },
+    {
+      "page": "Charity overview",
+      "violations": [],
+      "passes": 23
+    },
+    {
+      "page": "Claim history",
+      "violations": [],
+      "passes": 25
+    },
+    {
+      "page": "Verification",
+      "violations": [],
+      "passes": 26
+    },
+    {
+      "page": "Notifications",
+      "violations": [],
+      "passes": 19
+    },
+    {
+      "page": "Impact dashboard",
+      "violations": [],
+      "passes": 23
+    }
+  ]
+}

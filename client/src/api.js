@@ -47,4 +47,18 @@ export async function openProtectedFile(path) {
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
+// Saves a protected file (e.g. a monthly PDF report) to the user's device.
+export async function downloadProtectedFile(path, filename) {
+  const { res } = await send(path);
+  if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => null));
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
 export const qs = (params) => new URLSearchParams(Object.entries(params).filter(([, v]) => v !== '' && v !== undefined && v !== null)).toString();

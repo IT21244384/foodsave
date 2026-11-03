@@ -1,0 +1,50 @@
+{
+  "when": "2026-11-03T16:54:07.793Z",
+  "node": "v24.19.0",
+  "activeListings": 1000,
+  "resultsPerSearch": 100,
+  "searchSequentialMs": {
+    "requests": 200,
+    "p50": 30.9,
+    "p95": 35.8,
+    "max": 49.8
+  },
+  "searchParallel20Ms": {
+    "requests": 200,
+    "p50": 107.2,
+    "p95": 133.4,
+    "max": 154.7
+  },
+  "stockLockRounds": [
+    {
+      "ok": 10,
+      "refused": 40,
+      "left": 0,
+      "ms": 196
+    },
+    {
+      "ok": 10,
+      "refused": 40,
+      "left": 0,
+      "ms": 154
+    },
+    {
+      "ok": 10,
+      "refused": 40,
+      "left": 0,
+      "ms": 176
+    },
+    {
+      "ok": 10,
+      "refused": 40,
+      "left": 0,
+      "ms": 138
+    },
+    {
+      "ok": 10,
+      "refused": 40,
+      "left": 0,
+      "ms": 128
+    }
+  ]
+}

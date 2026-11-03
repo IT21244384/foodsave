@@ -1,0 +1,9 @@
+{
+  "name": "foodsave-e2e",
+  "private": true,
+  "description": "Browser system tests for FoodSave",
+  "dependencies": {
+    "axe-core": "^4.14.0",
+    "puppeteer-core": "^25.16.0"
+  }
+}

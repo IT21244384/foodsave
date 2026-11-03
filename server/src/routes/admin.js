@@ -10,6 +10,9 @@ const { validate } = require('../middleware/validate');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const { asyncHandler, HttpError } = require('../middleware/errors');
 const schemas = require('../validation/schemas');
+const Notification = require('../models/Notification');
+const { monthRange, currentMonth, platformImpact } = require('../services/impact');
+const { sendImpactPdf } = require('../services/pdf');
 
 // Administrator verification: restaurants (FR1.1, F1) and charities (FR2.1, F2).
 const router = express.Router();
@@ -24,6 +27,8 @@ async function review(Model, id, adminId, { decision, reason }) {
   if (!doc) throw new HttpError(404, 'Not found.');
   Object.assign(doc, { status: decision, rejectionReason: decision === 'rejected' ? reason : undefined, reviewedBy: adminId, reviewedAt: new Date() });
   await doc.save();
+  const outcome = decision === 'approved' ? 'Your FoodSave registration was approved.' : `Your FoodSave registration was not approved. Reason: ${reason}`;
+  await Notification.create({ user: doc.owner, title: 'Verification result', body: outcome });
   return doc;
 }
 
@@ -62,6 +67,31 @@ router.get('/restaurants', asyncHandler(async (req, res) => {
 
 router.patch('/restaurants/:id/review', validate(schemas.review), asyncHandler(async (req, res) => {
   res.json(await review(Restaurant, req.params.id, req.user.id, req.valid));
+}));
+
+// F2 – FR2.6 impact dashboard and monthly PDF (owned by Abisheak S).
+async function impactFor(query) {
+  const month = query.month || currentMonth();
+  return { month, area: query.area || '', ...(await platformImpact({ ...monthRange(month), area: query.area })) };
+}
+
+router.get('/impact', validate(schemas.reportQuery, 'query'), asyncHandler(async (req, res) => {
+  res.json(await impactFor(req.valid));
+}));
+
+router.get('/impact/report.pdf', validate(schemas.reportQuery, 'query'), asyncHandler(async (req, res) => {
+  const r = await impactFor(req.valid);
+  sendImpactPdf(res, {
+    filename: `foodsave-impact-${r.month}.pdf`,
+    title: 'FoodSave platform impact report',
+    subtitle: `${r.month}${r.area ? ` · ${r.area}` : ' · all areas'}`,
+    totals: r.totals,
+    tables: [
+      { heading: 'Top restaurants', head: ['Restaurant', 'Meals saved'], rows: r.topRestaurants.map((x) => [x.name, x.meals]) },
+      { heading: 'Donations per charity', head: ['Charity', 'Packs received'], rows: r.perCharity.map((x) => [x.name, x.meals]) },
+      { heading: 'Meals saved by week', head: ['Week', 'Meals saved'], rows: r.byWeek.map((x) => [x.label, x.meals]) },
+    ],
+  });
 }));
 
 module.exports = router;

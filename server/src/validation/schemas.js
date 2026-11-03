@@ -83,4 +83,17 @@ const review = z
   .object({ decision: z.enum(['approved', 'rejected'], { error: 'Decision must be approved or rejected.' }), reason: z.string().trim().max(300).optional() })
   .refine((v) => v.decision === 'approved' || (v.reason && v.reason.length >= 5), { message: 'Give a reason of at least 5 characters when rejecting.', path: ['reason'] });
 
-module.exports = { register, login, charityRegister, restaurantProfile, listing, myListingsQuery, nearbyQuery, review };
+const reportQuery = z.object({
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Choose a month.').optional(),
+  area: z.string().trim().max(60).optional(),
+});
+
+const claim = z.object({
+  quantity: z.coerce.number({ error: 'Choose how many packs.' }).int('Choose a whole number of packs.').min(1, 'Claim at least 1 pack.').max(500, 'Quantity is too high.'),
+});
+
+const pickupCode = z.object({
+  code: z.string({ error: 'Enter the pickup code.' }).trim().toUpperCase().regex(/^(FS|DN)-\d{4}$/, 'Enter a code like FS-4821 or DN-5120.'),
+});
+
+module.exports = { reportQuery, claim, pickupCode, register, login, charityRegister, restaurantProfile, listing, myListingsQuery, nearbyQuery, review };

@@ -8,6 +8,7 @@ const { requireAuth, requireRole } = require('../middleware/auth');
 const { asyncHandler, HttpError } = require('../middleware/errors');
 const schemas = require('../validation/schemas');
 const { checkListingRules } = require('../validation/listingRules');
+const { closeOpenHolds } = require('../services/holds');
 
 const router = express.Router();
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -94,7 +95,9 @@ router.put('/:id', requireAuth, requireRole('restaurant'), validate(schemas.list
   const data = applyRules({ ...req.valid });
   const taken = listing.quantity - listing.available; // packs already reserved or claimed
   if (data.quantity < taken) throw new HttpError(400, 'Please check the highlighted fields.', { quantity: `${taken} packs are already reserved; quantity cannot be lower than that.` });
+  if (taken > 0 && data.offerType !== listing.offerType) throw new HttpError(400, 'Please check the highlighted fields.', { offerType: 'Packs are already taken, so the offer type cannot change.' });
   Object.assign(listing, data, { available: data.quantity - taken });
+  if (listing.available === 0) listing.status = 'reserved';
   await listing.save();
   res.json(listing);
 }));
@@ -104,6 +107,7 @@ router.post('/:id/withdraw', requireAuth, requireRole('restaurant'), asyncHandle
   if (!['active', 'reserved'].includes(listing.status)) throw new HttpError(409, `This listing is already ${listing.status}.`);
   listing.status = 'withdrawn';
   await listing.save();
+  await closeOpenHolds(listing, 'cancelled', 'The restaurant withdrew this listing.', 'Pickup cancelled');
   res.json(listing);
 }));
 
