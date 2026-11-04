@@ -26,11 +26,13 @@ export default function MyListings() {
   }, [filters]);
 
   async function withdraw(l) {
-    if (!window.confirm(`Withdraw “${l.item}”? It will be removed from search straight away.`)) return;
+    const taken = l.quantity - l.available;
+    const warning = taken > 0 ? `\n\n${taken} pack${taken === 1 ? ' is' : 's are'} already reserved or claimed. Those bookings will be cancelled.` : '';
+    if (!window.confirm(`Withdraw “${l.item}”? It will be removed from search straight away.${warning}`)) return;
     try {
-      const updated = await api(`/listings/${l.id}/withdraw`, { method: 'POST' });
+      const { cancelledCount, ...updated } = await api(`/listings/${l.id}/withdraw`, { method: 'POST' });
       setListings((ls) => ls.map((x) => (x.id === l.id ? updated : x)));
-      setNotice(`“${l.item}” was withdrawn.`);
+      setNotice(`“${l.item}” was withdrawn.${cancelledCount ? ` ${cancelledCount} booking${cancelledCount === 1 ? ' was' : 's were'} cancelled.` : ''}`);
     } catch (e) {
       setError(e.message);
     }
@@ -64,6 +66,8 @@ export default function MyListings() {
                 <td><Chip status={l.status} /></td>
                 <td className="actions">{l.status === 'active' && (
                   <><Link className="btn ghost small" to={`/restaurant/listings/${l.id}/edit`}>Edit</Link> <button type="button" className="btn ghost small" onClick={() => withdraw(l)}>Withdraw</button></>
+                )}{l.status === 'reserved' && (
+                  <button type="button" className="btn ghost small" onClick={() => withdraw(l)}>Withdraw</button>
                 )}</td>
               </tr>))}
             </tbody>

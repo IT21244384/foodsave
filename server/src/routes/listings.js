@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const SurplusListing = require('../models/SurplusListing');
 const Restaurant = require('../models/Restaurant');
+const Reservation = require('../models/Reservation');
+const DonationClaim = require('../models/DonationClaim');
 const config = require('../config');
 const { validate } = require('../middleware/validate');
 const { requireAuth, requireRole } = require('../middleware/auth');
@@ -99,12 +101,22 @@ router.put('/:id', requireAuth, requireRole('restaurant'), validate(schemas.list
   res.json(listing);
 }));
 
+// Withdrawing also cancels every open reservation and donation claim on the listing, so nobody
+// turns up with a pickup code for food that is no longer on offer.
 router.post('/:id/withdraw', requireAuth, requireRole('restaurant'), asyncHandler(async (req, res) => {
   const listing = await ownListing(req.user.id, req.params.id);
   if (!['active', 'reserved'].includes(listing.status)) throw new HttpError(409, `This listing is already ${listing.status}.`);
-  listing.status = 'withdrawn';
-  await listing.save();
-  res.json(listing);
+  const updated = await SurplusListing.findOneAndUpdate(
+    { _id: listing._id, status: { $in: ['active', 'reserved'] } },
+    { status: 'withdrawn' },
+    { new: true }
+  );
+  if (!updated) throw new HttpError(409, 'This listing was just changed. Please refresh and try again.');
+  const [reservations, claims] = await Promise.all([
+    Reservation.updateMany({ listing: listing._id, status: 'reserved' }, { status: 'cancelled' }),
+    DonationClaim.updateMany({ listing: listing._id, status: 'claimed' }, { status: 'cancelled' }),
+  ]);
+  res.json({ ...updated.toJSON(), cancelledCount: reservations.modifiedCount + claims.modifiedCount });
 }));
 
 // Public listing detail (used by the customer listing page).

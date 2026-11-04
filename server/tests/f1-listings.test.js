@@ -1,6 +1,7 @@
 // F1 – Restaurant & Surplus Listing Management (Janahan R): FR1.1–FR1.3, FR1.6 search.
 const { useDatabase, makeUser, makeRestaurant, makeListing, validListingBody, api, at } = require('./helpers');
 const Restaurant = require('../src/models/Restaurant');
+const Reservation = require('../src/models/Reservation');
 
 useDatabase();
 
@@ -71,6 +72,22 @@ describe('FR1.2 create, update and withdraw listings', () => {
     const listing = await makeListing(restaurant);
     expect((await api().post(`/api/listings/${listing.id}/withdraw`).set(auth)).body.status).toBe('withdrawn');
     expect((await api().get(`/api/listings/${listing.id}`)).status).toBe(404);
+  });
+
+  test('TC-F1-24 withdrawing a listing cancels its open reservations', async () => {
+    const { auth, restaurant } = await makeRestaurant();
+    const listing = await makeListing(restaurant, { quantity: 10, available: 7 });
+    const customer = await makeUser('customer');
+    const open = await Reservation.create({ listing: listing._id, customer: customer.user._id, quantity: 2, pickupCode: 'FS-1111' });
+    const done = await Reservation.create({ listing: listing._id, customer: customer.user._id, quantity: 1, pickupCode: 'FS-2222', status: 'collected' });
+
+    const res = await api().post(`/api/listings/${listing.id}/withdraw`).set(auth);
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ status: 'withdrawn', cancelledCount: 1 });
+    expect((await Reservation.findById(open._id)).status).toBe('cancelled');
+    expect((await Reservation.findById(done._id)).status).toBe('collected'); // already handed over
+    const mine = await api().get('/api/reservations/mine').set(customer.auth);
+    expect(mine.body.find((r) => r.pickupCode === 'FS-1111').status).toBe('cancelled');
   });
 
   test('TC-SEC-09 a restaurant cannot edit another restaurant’s listing', async () => {
