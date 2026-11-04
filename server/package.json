@@ -36,5 +36,8 @@
       "<rootDir>/tests/env.js"
     ],
     "testTimeout": 60000
+  },
+  "engines": {
+    "node": ">=20.19"
   }
 }

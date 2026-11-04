@@ -9,7 +9,7 @@ charities claim donations for free, all before the food's safe-until time.
 
 ## Run it
 
-You need Node.js 20 or newer. No database install is needed for a demo.
+You need Node.js 20.19 or newer (22 LTS recommended; run `nvm use` to pick the version in `.nvmrc`). No database install is needed for a demo.
 
 ```bash
 npm run setup     # install server and client packages (first time only)

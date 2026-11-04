@@ -10,5 +10,8 @@
     "dev:server": "npm run dev --prefix server",
     "dev:client": "npm run dev --prefix client",
     "test": "npm test --prefix server"
+  },
+  "engines": {
+    "node": ">=20.19"
   }
 }
