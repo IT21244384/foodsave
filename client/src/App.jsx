@@ -9,6 +9,7 @@ import RestaurantDashboard from './pages/restaurant/Dashboard.jsx';
 import ListingEditor from './pages/restaurant/ListingEditor.jsx';
 import MyListings from './pages/restaurant/MyListings.jsx';
 import RestaurantProfile from './pages/restaurant/Profile.jsx';
+import Handover from './pages/restaurant/Handover.jsx';
 import FindSurplus from './pages/FindSurplus.jsx';
 import ListingDetail from './pages/ListingDetail.jsx';
 import MyReservations from './pages/MyReservations.jsx';
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/restaurant/listings" element={<RequireRole roles={['restaurant']}><MyListings /></RequireRole>} />
         <Route path="/restaurant/listings/:id/edit" element={<RequireRole roles={['restaurant']}><ListingEditor /></RequireRole>} />
         <Route path="/restaurant/profile" element={<RequireRole roles={['restaurant']}><RestaurantProfile /></RequireRole>} />
+        <Route path="/restaurant/handover" element={<RequireRole roles={['restaurant']}><Handover /></RequireRole>} />
 
         {/* F2 – Reservation, Charity Claims & Impact Reporting (Abisheak S) */}
         <Route path="/find" element={<FindSurplus />} />

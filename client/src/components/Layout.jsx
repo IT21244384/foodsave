@@ -3,7 +3,7 @@ import { useAuth } from '../auth.jsx';
 
 // [label, path] – a null path marks a screen planned for a later sprint (shown, but disabled).
 const TABS = {
-  restaurant: [['Dashboard', '/restaurant'], ['Post surplus', '/restaurant/new'], ['My listings', '/restaurant/listings'], ['Profile', '/restaurant/profile'], ['Hand-over', null, 'Sprint 2 (FR1.5)'], ['Reports', null, 'Sprint 3 (FR1.6 report)']],
+  restaurant: [['Dashboard', '/restaurant'], ['Post surplus', '/restaurant/new'], ['My listings', '/restaurant/listings'], ['Hand-over', '/restaurant/handover'], ['Profile', '/restaurant/profile'], ['Reports', null, 'Sprint 3 (FR1.6 report)']],
   customer: [['Find surplus', '/find'], ['My reservations', '/reservations']],
   charity: [['Overview', '/charity'], ['Donations near us', '/charity/donations'], ['Claim history', null, 'Sprint 2 (FR2.4)']],
   admin: [['Verification', '/admin'], ['Impact dashboard', null, 'Sprint 3 (FR2.6)']],
