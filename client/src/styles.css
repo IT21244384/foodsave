@@ -142,3 +142,19 @@ input[type=file] { width: 100%; padding: 8px; border: 1px dashed var(--input); b
 .stepper output { width: 44px; text-align: center; font-weight: 700; }
 .code { font-family: Consolas, monospace; font-size: 32px; font-weight: 700; letter-spacing: 3px; color: var(--green); background: var(--tint); border: 2px dashed var(--moss); border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 12px; }
 .mono { font-family: Consolas, monospace; }
+
+/* F1 reports */
+.chart { margin: 0; min-width: 0; }
+.chart h2 { margin-bottom: 2px; }
+.chart figcaption .sub { margin: 0 0 10px; }
+.chart-box { position: relative; height: 240px; }
+th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+tfoot th { color: var(--ink); text-transform: none; font-size: 14px; letter-spacing: 0; border-bottom: 0; border-top: 1px solid var(--line); }
+
+@media print {
+  header.app, .foot, .skip, .no-print, .pagehead .owner { display: none !important; }
+  body { background: #fff; }
+  main { padding: 0; }
+  .card { box-shadow: none; break-inside: avoid; }
+  .report-charts { grid-template-columns: 1fr 1fr; }
+}

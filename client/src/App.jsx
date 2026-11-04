@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
 import { useAuth, HOME_FOR_ROLE } from './auth.jsx';
@@ -10,6 +11,8 @@ import ListingEditor from './pages/restaurant/ListingEditor.jsx';
 import MyListings from './pages/restaurant/MyListings.jsx';
 import RestaurantProfile from './pages/restaurant/Profile.jsx';
 import Handover from './pages/restaurant/Handover.jsx';
+// Loaded on demand so Chart.js is only downloaded when a restaurant opens Reports.
+const Reports = lazy(() => import('./pages/restaurant/Reports.jsx'));
 import FindSurplus from './pages/FindSurplus.jsx';
 import ListingDetail from './pages/ListingDetail.jsx';
 import MyReservations from './pages/MyReservations.jsx';
@@ -39,6 +42,7 @@ export default function App() {
         <Route path="/restaurant/listings/:id/edit" element={<RequireRole roles={['restaurant']}><ListingEditor /></RequireRole>} />
         <Route path="/restaurant/profile" element={<RequireRole roles={['restaurant']}><RestaurantProfile /></RequireRole>} />
         <Route path="/restaurant/handover" element={<RequireRole roles={['restaurant']}><Handover /></RequireRole>} />
+        <Route path="/restaurant/reports" element={<RequireRole roles={['restaurant']}><Suspense fallback={<Spinner />}><Reports /></Suspense></RequireRole>} />
 
         {/* F2 – Reservation, Charity Claims & Impact Reporting (Abisheak S) */}
         <Route path="/find" element={<FindSurplus />} />

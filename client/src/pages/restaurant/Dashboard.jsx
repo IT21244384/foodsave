@@ -3,16 +3,18 @@ import { Link } from 'react-router-dom';
 import { api } from '../../api.js';
 import { useAuth } from '../../auth.jsx';
 import { PageHead, Chip, Spinner, Empty, Banner } from '../../components/ui.jsx';
-import { rs, fmtTime, timeLeft } from '../../lib.js';
+import { rs, kg, fmtTime, timeLeft } from '../../lib.js';
 import StatusBanner from './StatusBanner.jsx';
 
 export default function RestaurantDashboard() {
   const { user, profile } = useAuth();
   const [listings, setListings] = useState(null);
   const [error, setError] = useState('');
+  const [thisMonth, setThisMonth] = useState(null);
 
   useEffect(() => {
     api('/listings/mine?range=month').then(setListings).catch((e) => setError(e.message));
+    api('/restaurants/me/report?months=1').then((r) => setThisMonth(r.totals)).catch(() => setThisMonth(null));
   }, []);
 
   const active = (listings || []).filter((l) => l.status === 'active');
@@ -28,7 +30,9 @@ export default function RestaurantDashboard() {
         <div className="card kpi"><div className="v">{active.length}</div><div className="l">Active listings now</div></div>
         <div className="card kpi"><div className="v">{packs}</div><div className="l">Packs still available</div></div>
         <div className="card kpi"><div className="v">{(listings || []).length}</div><div className="l">Listings in the last month</div></div>
-        <div className="card kpi"><div className="v">{(listings || []).filter((l) => l.offerType === 'donate').length}</div><div className="l">Donation listings this month</div></div>
+        <Link className="card kpi" to="/restaurant/reports" style={{ textDecoration: 'none' }}>
+          <div className="v">{thisMonth ? kg(thisMonth.kgSaved) : '–'}</div><div className="l">Food saved this month · see reports</div>
+        </Link>
       </div>
       <div className="card" style={{ marginTop: 16 }}>
         <div className="row" style={{ alignItems: 'center', marginBottom: 6 }}>
