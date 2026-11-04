@@ -37,7 +37,7 @@ All demo accounts use the password **`Demo@1234`**. All names are sample data.
 | Role | Email | Notes |
 |---|---|---|
 | Administrator | admin@foodsave.lk | Verifies restaurants and charities |
-| Restaurant (approved) | dilan@greenleaf.lk | Green Leaf Café, Malabe |
+| Restaurant (approved) | dilan@greenleaf.lk | Green Leaf Café, Malabe. Has 5 months of report history |
 | Restaurant (pending) | tharindu@newtaste.lk | Cannot post until approved |
 | Customer | nimal@example.com | "Near me" search |
 | Charity (approved) | sahana@charity.lk | Sahana Elders’ Home |
@@ -46,17 +46,31 @@ All demo accounts use the password **`Demo@1234`**. All names are sample data.
 Sign-in is rate limited to 10 attempts per 15 minutes per IP address. If you hit the limit,
 restart the server.
 
+## Try the F1 features
+
+Sign in as `dilan@greenleaf.lk`:
+
+1. **Post surplus**: fill in the form, including weight per pack. Rule errors show per field.
+2. **Hand-over**: enter pickup code **`FS-4821`** (Nimal, 2 × vegetable fried rice) or
+   **`FS-2290`** (Ayesha, 2 × fish buns). The page shows kg saved and the amount to collect,
+   and a code works only once.
+3. **Reports**: monthly charts of portions sold and donated, kg saved and cost recovered.
+   Hand-overs from step 2 appear in the current month. **Print** gives a clean printout.
+4. **My listings**: withdrawing a listing with bookings cancels those bookings. Listings past
+   their safe-until time become *Expired* within a minute (auto-expiry job).
+
 ## Tests
 
 ```bash
 npm test
 ```
 
-There are 70 tests: unit tests for the listing rules, API tests with an in-memory database
-(including 50 simultaneous reservations for the stock lock), and basic security tests. Test IDs are `TC-F1-xx` (F1), `TC-F2-xx` (F2), `TC-AU-xx` (accounts) and
-`TC-SEC-xx` (security).
+There are 94 tests: unit tests for the listing rules and report months, API tests with an
+in-memory database (including 50 simultaneous reservations for the stock lock), the auto-expiry
+job, hand-over and the monthly report, and basic security tests. Test IDs are `TC-F1-xx` (F1),
+`TC-F2-xx` (F2), `TC-AU-xx` (accounts) and `TC-SEC-xx` (security).
 
-## Progress 1 scope
+## Scope and progress
 
 | Requirement | Owner | Status |
 |---|---|---|
@@ -64,12 +78,14 @@ There are 70 tests: unit tests for the listing rules, API tests with an in-memor
 | FR1.1 Restaurant registration and admin verification | Janahan R | Done |
 | FR1.2 Create, view, update, withdraw surplus listings | Janahan R | Done |
 | FR1.3 Listing validation and food-safety rules | Janahan R | Done (client and server) |
-| FR1.6 Search own listings | Janahan R | Done (monthly report: sprint 3) |
+| FR1.4 Scheduled auto-expiry of listings past safe-until (node-cron) | Janahan R | Done |
+| FR1.5 Hand-over confirmation with pickup code, portions and kg saved | Janahan R | Done |
+| FR1.6 Search own listings | Janahan R | Done |
+| F1 report: monthly portions, kg saved and cost recovered (Chart.js) | Janahan R | Done |
 | FR2.1 Charity registration with certificate, admin verification | Abisheak S | Done |
 | FR2.2 "Near me" search with map and filters | Abisheak S | Done |
 | FR2.3 Customer reservations with pickup codes, cancel | Abisheak S | Done |
 | FR2.5 Atomic stock lock (no double-booking) | Abisheak S | Done |
-| FR1.4 Auto-expiry job, FR1.5 hand-over | Janahan R | Sprint 2 (search already hides expired food) |
 | FR2.4 Charity claims | Abisheak S | Sprint 2 (data model ready) |
 | FR2.6 Impact dashboard and PDF | Abisheak S | Sprint 3 |
 
@@ -78,12 +94,15 @@ There are 70 tests: unit tests for the listing rules, API tests with an in-memor
 ```
 server/
   src/models/        User, Restaurant, Charity, SurplusListing, Reservation, DonationClaim
-  src/routes/        auth, restaurants (F1), listings (F1 + F2 search), reservations (F2), charities (F2), admin
+  src/routes/        auth, restaurants (F1 profile + report), listings (F1 + F2 search), handover (F1),
+                     reservations (F2), charities (F2), admin
+  src/jobs/          FR1.4 auto-expiry job (runs every minute)
+  src/reports/       F1 monthly report
   src/validation/    zod request schemas and the FR1.3 listing rules
   src/middleware/    JWT auth and roles, validation, uploads, error handling
-  src/seed/          demo data
+  src/seed/          demo data, including past months for the F1 report
   tests/             Jest + Supertest
 client/
-  src/pages/restaurant/   F1 screens
+  src/pages/restaurant/   F1 screens: dashboard, listing editor, my listings, hand-over, reports, profile
   src/pages/FindSurplus.jsx, ListingDetail.jsx, MyReservations.jsx, charity/, admin/   F2 screens
 ```
