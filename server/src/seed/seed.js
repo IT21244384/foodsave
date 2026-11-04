@@ -103,6 +103,70 @@ async function seed() {
     await Reservation.create({ listing: listing._id, customer: customers[email]._id, quantity, pickupCode });
     await SurplusListing.updateOne({ _id: listing._id }, { $inc: { available: -quantity } });
   }
+
+  // Past months of handed-over food for Green Leaf Café, so the F1 monthly report has data.
+  const charities = await Charity.find({ status: 'approved' }).sort({ name: 1 });
+  await seedHistory(restaurants.greenleaf, Object.values(customers), charities);
+}
+
+// [item, category, dietTags, originalPrice, price, offerType, packWeightKg]
+const HISTORY_ITEMS = [
+  ['Vegetable fried rice', 'Cooked', ['Veg'], 650, 250, 'sale', 0.45],
+  ['Chicken kottu', 'Cooked', ['Non-veg', 'Halal'], 900, 350, 'sale', 0.5],
+  ['Fish buns (pack of 4)', 'Bakery', ['Non-veg'], 480, 200, 'sale', 0.32],
+  ['Dhal curry and rice', 'Cooked', ['Veg'], 450, 0, 'donate', 0.45],
+];
+
+// Five past months, four listings each (one per week, 8:30 p.m. Sri Lanka time), with numbers
+// growing month by month. Sale packs are reserved two at a time and collected; one reservation a
+// month is a no-show (it is not counted in the report). Donations go to a charity in one claim.
+// Codes start with FS-0, which new reservations (FS-1000 and up) never use.
+async function seedHistory(restaurant, customers, charities) {
+  const now = new Date();
+  let code = 0;
+  const nextCode = () => `FS-${String((code += 1)).padStart(4, '0')}`;
+  const noTimestamps = { timestamps: false };
+
+  for (let back = 5; back >= 1; back -= 1) {
+    for (const [week, [item, category, dietTags, originalPrice, price, offerType, packWeightKg]] of HISTORY_ITEMS.entries()) {
+      const day = 4 + week * 7;
+      // Month arithmetic in UTC; 15:00 UTC is 8:30 p.m. in Sri Lanka.
+      const pickupFrom = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - back, day, 15, 0));
+      const pickupTo = new Date(pickupFrom.getTime() + 60 * 60000);
+      const safeUntil = new Date(pickupFrom.getTime() + 150 * 60000);
+      const posted = new Date(pickupFrom.getTime() - 30 * 60000);
+      const quantity = 5 + (5 - back) * 2 + week; // grows from 5–8 packs to 13–16 packs
+      const hasNoShow = offerType === 'sale' && week === 0;
+
+      const [listing] = await SurplusListing.create([{
+        restaurant: restaurant._id, location: restaurant.location, item, category, dietTags, quantity, available: 0, packWeightKg,
+        originalPrice, price, offerType, pickupFrom, pickupTo, safeUntil, hygieneDeclared: true,
+        status: hasNoShow ? 'expired' : 'collected', createdAt: posted, updatedAt: safeUntil,
+      }], noTimestamps);
+
+      if (offerType === 'donate') {
+        const charity = charities[back % charities.length];
+        const collectedAt = new Date(pickupFrom.getTime() + 25 * 60000);
+        await DonationClaim.create([{
+          listing: listing._id, charity: charity._id, quantity, pickupCode: nextCode(), status: 'collected', collectedAt,
+          createdAt: posted, updatedAt: collectedAt,
+        }], noTimestamps);
+        continue;
+      }
+
+      const bookings = [];
+      for (let left = quantity, i = 0; left > 0; left -= 2, i += 1) {
+        const n = Math.min(2, left);
+        const noShow = hasNoShow && left <= 2; // the last booking of the week's first listing
+        const collectedAt = noShow ? undefined : new Date(pickupFrom.getTime() + (5 + i * 7) * 60000);
+        bookings.push({
+          listing: listing._id, customer: customers[i % customers.length]._id, quantity: n, pickupCode: nextCode(),
+          status: noShow ? 'no-show' : 'collected', collectedAt, createdAt: posted, updatedAt: collectedAt || safeUntil,
+        });
+      }
+      await Reservation.create(bookings, noTimestamps);
+    }
+  }
 }
 
 module.exports = { seed, DEMO_PASSWORD };

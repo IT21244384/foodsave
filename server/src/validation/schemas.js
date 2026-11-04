@@ -70,6 +70,11 @@ const myListingsQuery = z.object({
   range: z.enum(['today', 'week', 'month', 'all']).default('all'),
 });
 
+// F1 report: how many months to show, ending with the current month.
+const reportQuery = z.object({
+  months: z.coerce.number({ error: 'Months must be a number.' }).int('Months must be a whole number.').min(1, 'Show at least 1 month.').max(12, 'Show at most 12 months.').default(6),
+});
+
 const nearbyQuery = z.object({
   lat,
   lng,
@@ -84,4 +89,4 @@ const review = z
   .object({ decision: z.enum(['approved', 'rejected'], { error: 'Decision must be approved or rejected.' }), reason: z.string().trim().max(300).optional() })
   .refine((v) => v.decision === 'approved' || (v.reason && v.reason.length >= 5), { message: 'Give a reason of at least 5 characters when rejecting.', path: ['reason'] });
 
-module.exports = { register, login, charityRegister, restaurantProfile, listing, myListingsQuery, nearbyQuery, review };
+module.exports = { register, login, charityRegister, restaurantProfile, listing, myListingsQuery, reportQuery, nearbyQuery, review };
