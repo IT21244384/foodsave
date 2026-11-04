@@ -51,6 +51,22 @@ describe('FR1.2 create, update and withdraw listings', () => {
     expect(res.body.fields).toEqual(expect.objectContaining({ item: expect.any(String), category: expect.any(String), quantity: expect.any(String), offerType: expect.any(String) }));
   });
 
+  test('TC-F1-29 pack weight is required and kept within 0.05–25 kg', async () => {
+    const { auth } = await makeRestaurant();
+    const { packWeightKg, ...noWeight } = validListingBody();
+    const missing = await api().post('/api/listings').set(auth).send(noWeight);
+    expect(missing.status).toBe(400);
+    expect(missing.body.fields.packWeightKg).toMatch(/required/);
+    for (const bad of [0, 0.01, 30]) {
+      const res = await api().post('/api/listings').set(auth).send(validListingBody({ packWeightKg: bad }));
+      expect(res.status).toBe(400);
+      expect(res.body.fields).toHaveProperty('packWeightKg');
+    }
+    const ok = await api().post('/api/listings').set(auth).send(validListingBody({ packWeightKg: 0.35 }));
+    expect(ok.status).toBe(201);
+    expect(ok.body.packWeightKg).toBe(0.35);
+  });
+
   test('TC-F1-19 a restaurant can update its own active listing', async () => {
     const { auth, restaurant } = await makeRestaurant();
     const listing = await makeListing(restaurant);

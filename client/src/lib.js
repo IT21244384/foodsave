@@ -6,6 +6,8 @@ export function fmtTime(d) {
   return new Date(d).toLocaleTimeString('en-LK', { hour: 'numeric', minute: '2-digit' });
 }
 
+export const kg = (n) => `${Number(n).toLocaleString('en-LK', { maximumFractionDigits: 1 })} kg`;
+
 export function fmtDateTime(d) {
   return new Date(d).toLocaleString('en-LK', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 }
@@ -32,6 +34,8 @@ export function checkListing(v, now = new Date()) {
   if (!v.item || v.item.trim().length < 2) e.item = 'Enter an item name.';
   if (!(Number(v.quantity) >= 1)) e.quantity = 'Quantity must be at least 1.';
   else if (Number(v.quantity) > 500) e.quantity = 'Quantity cannot exceed 500.';
+  if (v.packWeightKg === '' || !(Number(v.packWeightKg) >= 0.05)) e.packWeightKg = 'Weight per pack must be at least 0.05 kg.';
+  else if (Number(v.packWeightKg) > 25) e.packWeightKg = 'Weight per pack cannot exceed 25 kg.';
   if (!(Number(v.originalPrice) >= 0) || v.originalPrice === '') e.originalPrice = 'Enter the original price.';
   const from = new Date(v.pickupFrom); const to = new Date(v.pickupTo); const safe = new Date(v.safeUntil);
   if (!v.pickupFrom) e.pickupFrom = 'Choose a pickup start time.';

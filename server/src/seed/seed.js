@@ -39,19 +39,19 @@ const CHARITIES = [
   { owner: ['Thanuja Nadarajah', 'myws@charity.lk'], name: 'Malabe Youth Welfare Society', regNo: 'CBO/MAL/077', area: 'Malabe', address: '2 Pittugala Road, Malabe', contactPerson: 'Thanuja Nadarajah', phone: '0112456784', loc: [6.917, 79.96], status: 'pending' },
 ];
 
-// [restaurantKey, item, category, dietTags, qty, originalPrice, price, offerType, pickupFrom, pickupTo, safeUntil (minutes from now), status]
+// [restaurantKey, item, category, dietTags, qty, originalPrice, price, offerType, pickupFrom, pickupTo, safeUntil (minutes from now), status, packWeightKg]
 const LISTINGS = [
-  ['greenleaf', 'Vegetable fried rice', 'Cooked', ['Veg'], 10, 650, 250, 'sale', 20, 80, 170, 'active'],
-  ['greenleaf', 'Chicken kottu', 'Cooked', ['Non-veg', 'Halal'], 5, 900, 0, 'donate', 20, 110, 199, 'active'],
-  ['greenleaf', 'Fish buns (pack of 4)', 'Bakery', ['Non-veg'], 8, 480, 200, 'sale', -10, 50, 140, 'active'],
-  ['greenleaf', 'Dhal curry and rice', 'Cooked', ['Veg'], 6, 450, 150, 'sale', -130, -70, -40, 'expired'],
-  ['greenleaf', 'Vegetable noodles', 'Cooked', ['Veg'], 12, 600, 220, 'sale', -300, -240, -200, 'withdrawn'],
-  ['lanka', 'Rice and curry (veg)', 'Cooked', ['Veg'], 20, 500, 180, 'sale', 20, 80, 140, 'active'],
-  ['spice', 'Egg rotti', 'Cooked', ['Non-veg'], 6, 300, 120, 'sale', 5, 35, 80, 'active'],
-  ['spice', 'Chicken biryani', 'Cooked', ['Non-veg', 'Halal'], 12, 900, 350, 'sale', 50, 110, 199, 'active'],
-  ['bake', 'Assorted pastries box', 'Bakery', ['Veg', 'Contains nuts'], 15, 1200, 0, 'donate', 5, 65, 199, 'active'],
-  ['bake', 'Bread loaves (sealed)', 'Packaged', ['Veg'], 10, 220, 90, 'sale', 5, 50, 900, 'active'],
-  ['seabreeze', 'Buffet mixed rice', 'Cooked', ['Non-veg'], 30, 1500, 0, 'donate', 80, 140, 199, 'active'],
+  ['greenleaf', 'Vegetable fried rice', 'Cooked', ['Veg'], 10, 650, 250, 'sale', 20, 80, 170, 'active', 0.45],
+  ['greenleaf', 'Chicken kottu', 'Cooked', ['Non-veg', 'Halal'], 5, 900, 0, 'donate', 20, 110, 199, 'active', 0.5],
+  ['greenleaf', 'Fish buns (pack of 4)', 'Bakery', ['Non-veg'], 8, 480, 200, 'sale', -10, 50, 140, 'active', 0.32],
+  ['greenleaf', 'Dhal curry and rice', 'Cooked', ['Veg'], 6, 450, 150, 'sale', -130, -70, -40, 'expired', 0.45],
+  ['greenleaf', 'Vegetable noodles', 'Cooked', ['Veg'], 12, 600, 220, 'sale', -300, -240, -200, 'withdrawn', 0.4],
+  ['lanka', 'Rice and curry (veg)', 'Cooked', ['Veg'], 20, 500, 180, 'sale', 20, 80, 140, 'active', 0.5],
+  ['spice', 'Egg rotti', 'Cooked', ['Non-veg'], 6, 300, 120, 'sale', 5, 35, 80, 'active', 0.25],
+  ['spice', 'Chicken biryani', 'Cooked', ['Non-veg', 'Halal'], 12, 900, 350, 'sale', 50, 110, 199, 'active', 0.55],
+  ['bake', 'Assorted pastries box', 'Bakery', ['Veg', 'Contains nuts'], 15, 1200, 0, 'donate', 5, 65, 199, 'active', 0.6],
+  ['bake', 'Bread loaves (sealed)', 'Packaged', ['Veg'], 10, 220, 90, 'sale', 5, 50, 900, 'active', 0.45],
+  ['seabreeze', 'Buffet mixed rice', 'Cooked', ['Non-veg'], 30, 1500, 0, 'donate', 80, 140, 199, 'active', 0.5],
 ];
 
 async function seed() {
@@ -83,10 +83,10 @@ async function seed() {
   }
 
   const listings = {};
-  for (const [key, item, category, dietTags, qty, originalPrice, price, offerType, from, to, safe, status] of LISTINGS) {
+  for (const [key, item, category, dietTags, qty, originalPrice, price, offerType, from, to, safe, status, packWeightKg] of LISTINGS) {
     const r = restaurants[key];
     listings[item] = await SurplusListing.create({
-      restaurant: r._id, location: r.location, item, category, dietTags, quantity: qty, available: qty, originalPrice, price, offerType,
+      restaurant: r._id, location: r.location, item, category, dietTags, quantity: qty, available: qty, packWeightKg, originalPrice, price, offerType,
       pickupFrom: at(from), pickupTo: at(to), safeUntil: at(safe), hygieneDeclared: true, status,
     });
   }

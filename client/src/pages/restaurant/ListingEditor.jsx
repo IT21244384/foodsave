@@ -3,11 +3,11 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { api } from '../../api.js';
 import { useAuth } from '../../auth.jsx';
 import { PageHead, TextInput, Select, Banner, Spinner } from '../../components/ui.jsx';
-import { checkListing, inMinutes, toLocalInput } from '../../lib.js';
+import { checkListing, inMinutes, toLocalInput, kg } from '../../lib.js';
 import StatusBanner from './StatusBanner.jsx';
 
 const DIET = ['Veg', 'Non-veg', 'Halal', 'Contains nuts'];
-const blank = () => ({ item: '', category: 'Cooked', dietTags: [], quantity: 10, originalPrice: '', price: '', offerType: 'sale', pickupFrom: inMinutes(20), pickupTo: inMinutes(80), safeUntil: inMinutes(170), hygieneDeclared: false });
+const blank = () => ({ item: '', category: 'Cooked', dietTags: [], quantity: 10, packWeightKg: 0.4, originalPrice: '', price: '', offerType: 'sale', pickupFrom: inMinutes(20), pickupTo: inMinutes(80), safeUntil: inMinutes(170), hygieneDeclared: false });
 
 // F1 – FR1.2 create/update a listing with FR1.3 validation (client + server).
 export default function ListingEditor() {
@@ -23,7 +23,7 @@ export default function ListingEditor() {
   useEffect(() => {
     if (!editing) return;
     api(`/listings/${id}`).then((l) => setV({
-      item: l.item, category: l.category, dietTags: l.dietTags, quantity: l.quantity, originalPrice: l.originalPrice, price: l.offerType === 'donate' ? '' : l.price,
+      item: l.item, category: l.category, dietTags: l.dietTags, quantity: l.quantity, packWeightKg: l.packWeightKg, originalPrice: l.originalPrice, price: l.offerType === 'donate' ? '' : l.price,
       offerType: l.offerType, pickupFrom: toLocalInput(l.pickupFrom), pickupTo: toLocalInput(l.pickupTo), safeUntil: toLocalInput(l.safeUntil), hygieneDeclared: l.hygieneDeclared,
     })).catch((e) => setMessage(e.message));
   }, [editing, id]);
@@ -44,7 +44,7 @@ export default function ListingEditor() {
     setBusy(true);
     try {
       const body = {
-        ...v, quantity: Number(v.quantity), originalPrice: Number(v.originalPrice), price: v.offerType === 'donate' ? 0 : Number(v.price),
+        ...v, quantity: Number(v.quantity), packWeightKg: Number(v.packWeightKg), originalPrice: Number(v.originalPrice), price: v.offerType === 'donate' ? 0 : Number(v.price),
         pickupFrom: new Date(v.pickupFrom).toISOString(), pickupTo: new Date(v.pickupTo).toISOString(), safeUntil: new Date(v.safeUntil).toISOString(),
       };
       await api(editing ? `/listings/${id}` : '/listings', { method: editing ? 'PUT' : 'POST', body });
@@ -83,6 +83,8 @@ export default function ListingEditor() {
           </div>
           <div className="row">
             <TextInput label="Quantity (packs)" type="number" min="1" max="500" value={v.quantity} error={errors.quantity} onChange={set('quantity')} />
+            <TextInput label="Weight per pack (kg)" type="number" min="0.05" max="25" step="0.05" value={v.packWeightKg} error={errors.packWeightKg} onChange={set('packWeightKg')}
+              hint={Number(v.quantity) > 0 && Number(v.packWeightKg) > 0 ? `${kg(Number(v.quantity) * Number(v.packWeightKg))} in total` : 'Used to report kg of food saved.'} />
             <TextInput label="Original price (Rs)" type="number" min="0" value={v.originalPrice} error={errors.originalPrice} onChange={set('originalPrice')} />
             {v.offerType === 'sale' && <TextInput label="Discounted price (Rs)" type="number" min="1" value={v.price} error={errors.price} onChange={set('price')} />}
           </div>
@@ -107,12 +109,13 @@ export default function ListingEditor() {
             <li>Safe-until must be after the pickup window ends.</li>
             <li>Cooked food: safe-until at most 6 hours from now.</li>
             <li>Discounted price must be lower than the original price.</li>
+            <li>Weight per pack: 0.05 kg to 25 kg.</li>
             <li>The hygiene declaration is required.</li>
           </ul>
           <h2 style={{ marginTop: 18 }}>What happens next</h2>
           <ul style={{ margin: 0, paddingLeft: 18 }}>
             <li>It appears in “near me” search for customers and charities.</li>
-            <li>It stops showing once its safe-until time passes.</li>
+            <li>It is marked expired automatically once its safe-until time passes.</li>
           </ul>
         </aside>
       </div>

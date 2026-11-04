@@ -15,6 +15,9 @@ const listingSchema = new Schema(
     dietTags: { type: [{ type: String, enum: DIET_TAGS }], default: [] },
     quantity: { type: Number, required: true, min: 1, max: 500 },
     available: { type: Number, required: true, min: 0 },
+    // Weight of one pack, used to report kg of food saved (FR1.5 hand-over, F1 report).
+    // Default keeps listings created before this field valid.
+    packWeightKg: { type: Number, min: 0.05, max: 25, default: 0.4 },
     originalPrice: { type: Number, required: true, min: 0 },
     price: { type: Number, required: true, min: 0 }, // 0 for donations
     offerType: { type: String, enum: OFFER_TYPES, required: true },

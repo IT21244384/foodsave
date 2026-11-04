@@ -40,13 +40,13 @@ async function makeRestaurant(status = 'approved', { lat = 6.9061, lng = 79.9696
 async function makeListing(restaurant, overrides = {}) {
   return SurplusListing.create({
     restaurant: restaurant._id, location: restaurant.location, item: 'Vegetable fried rice', category: 'Cooked', dietTags: ['Veg'],
-    quantity: 10, available: 10, originalPrice: 650, price: 250, offerType: 'sale',
+    quantity: 10, available: 10, packWeightKg: 0.45, originalPrice: 650, price: 250, offerType: 'sale',
     pickupFrom: at(10), pickupTo: at(60), safeUntil: at(120), hygieneDeclared: true, status: 'active', ...overrides,
   });
 }
 
 const validListingBody = (overrides = {}) => ({
-  item: 'Vegetable fried rice', category: 'Cooked', dietTags: ['Veg'], quantity: 10, originalPrice: 650, price: 250,
+  item: 'Vegetable fried rice', category: 'Cooked', dietTags: ['Veg'], quantity: 10, packWeightKg: 0.45, originalPrice: 650, price: 250,
   offerType: 'sale', pickupFrom: at(10), pickupTo: at(60), safeUntil: at(120), hygieneDeclared: true, ...overrides,
 });
 

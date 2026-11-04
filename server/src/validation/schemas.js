@@ -54,6 +54,7 @@ const listing = z.object({
   category: z.enum(CATEGORIES, { error: 'Choose a category.' }),
   dietTags: z.array(z.enum(DIET_TAGS, { error: 'Unknown dietary tag.' })).max(4).default([]),
   quantity: z.coerce.number({ error: 'Quantity is required.' }).int('Quantity must be a whole number.').min(1, 'Quantity must be at least 1.').max(500, 'Quantity cannot exceed 500.'),
+  packWeightKg: z.coerce.number({ error: 'Weight per pack is required.' }).min(0.05, 'Weight per pack must be at least 0.05 kg.').max(25, 'Weight per pack cannot exceed 25 kg.'),
   originalPrice: z.coerce.number({ error: 'Original price is required.' }).min(0, 'Price cannot be negative.').max(100000, 'Price is too high.'),
   price: z.coerce.number().min(0, 'Price cannot be negative.').max(100000, 'Price is too high.').default(0),
   offerType: z.enum(OFFER_TYPES, { error: 'Choose sale or donation.' }),
