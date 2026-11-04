@@ -26,6 +26,7 @@ function createApp({ loginLimit = config.loginRateLimit } = {}) {
   app.get('/api/health', (_req, res) => res.json({ ok: true }));
   app.use('/api/auth', require('./routes/auth')({ loginLimit }));
   app.use('/api/restaurants', require('./routes/restaurants'));
+  app.use('/api/handover', require('./routes/handover'));
   app.use('/api', require('./routes/reservations')); // before /api/listings/:id
   app.use('/api/listings', require('./routes/listings'));
   app.use('/api/charities', require('./routes/charities'));
